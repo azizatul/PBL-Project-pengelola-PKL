@@ -114,7 +114,8 @@
             </div>
         @endif
     
-    {{-- BAGIAN 1: FORM UPLOAD --}}
+    {{-- BAGIAN 1: FORM UPLOAD (Hanya untuk mahasiswa) --}}
+    @if(Auth::check() && Auth::user()->role === 'mahasiswa')
     <div class="card card-minimal mb-5">
         <div class="card-header-minimal">
             <i class="fas fa-cloud-upload-alt me-2 text-primary"></i> Upload Transkrip Baru
@@ -128,7 +129,7 @@
                         <label class="form-label text-muted small fw-bold mb-1">NIM MAHASISWA</label>
                         <input type="text" name="nim" class="form-control form-control-minimal" placeholder="Contoh: 2401301095" required>
                     </div>
-                    
+
                     {{-- INPUT NAMA DIHAPUS (Biar sistem otomatis cari sendiri) --}}
 
                     {{-- INPUT FILE --}}
@@ -136,7 +137,7 @@
                         <label class="form-label text-muted small fw-bold mb-1">FILE TRANSKRIP (PDF)</label>
                         <input type="file" name="file" class="form-control form-control-minimal" accept="application/pdf" required>
                     </div>
-                    
+
                     {{-- TOMBOL --}}
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100" style="border-radius: 8px; padding: 0.6rem;">
@@ -147,6 +148,7 @@
             </form>
         </div>
     </div>
+    @endif
 
     {{-- BAGIAN 2: DAFTAR DATA --}}
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -201,7 +203,7 @@
             {{ $data->created_at->format('d M Y, H:i') }} WIB
         </td>
 
-        {{-- KOLOM AKSI (DENGAN TOMBOL UBAH STATUS) --}}
+        {{-- KOLOM AKSI --}}
         <td class="text-end pe-4">
             <div class="d-flex justify-content-end gap-1">
 
@@ -210,12 +212,28 @@
                     <i class="fas fa-eye"></i>
                 </a>
 
-                {{-- 2. Tombol SETUJUI dan TOLAK (Hanya untuk kaprodi) --}}
+                {{-- 2. Tombol EDIT dan HAPUS (Hanya untuk mahasiswa pemilik) --}}
+                @if(Auth::check() && Auth::user()->role === 'mahasiswa' && $data->mahasiswa->user_id == Auth::user()->id)
+                    {{-- Tombol EDIT --}}
+                    <a href="{{ route('transkip-nilai.edit', $data->id) }}" class="btn-icon edit" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    {{-- Tombol HAPUS --}}
+                    <form action="{{ route('transkip-nilai.destroy', $data->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus transkip nilai ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-icon delete" title="Hapus">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                @endif
+
+                {{-- 3. Tombol SETUJUI dan TOLAK (Hanya untuk kaprodi) --}}
                 @if(Auth::check() && Auth::user()->role === 'kaprodi')
                     {{-- Tombol SETUJUI --}}
                     <form action="{{ route('transkip-nilai.update-status', $data->id) }}" method="POST" class="d-inline">
                         @csrf
-                        @method('PATCH') {{-- WAJIB ADA --}}
+                        @method('PATCH')
                         <input type="hidden" name="status" value="approved">
                         <button type="submit" class="btn-icon text-success" title="Setujui">
                             <i class="fas fa-check"></i>
@@ -224,7 +242,7 @@
                     {{-- Tombol TOLAK --}}
                     <form action="{{ route('transkip-nilai.update-status', $data->id) }}" method="POST" class="d-inline">
                         @csrf
-                        @method('PATCH') {{-- WAJIB ADA --}}
+                        @method('PATCH')
                         <input type="hidden" name="status" value="rejected">
                         <button type="submit" class="btn-icon text-danger" title="Tolak">
                             <i class="fas fa-times"></i>
@@ -232,8 +250,8 @@
                     </form>
                 @endif
 
-                {{-- 3. Tombol HAPUS (Hanya untuk kaprodi dan admin) --}}
-                @if(Auth::check() && in_array(Auth::user()->role, ['kaprodi', 'admin']))
+                {{-- 4. Tombol HAPUS (Hanya untuk admin) --}}
+                @if(Auth::check() && Auth::user()->role === 'admin')
                     <form action="{{ route('transkip-nilai.destroy', $data->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                         @csrf
                         @method('DELETE')

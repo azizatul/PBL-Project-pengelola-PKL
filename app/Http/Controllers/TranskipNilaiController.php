@@ -67,6 +67,12 @@ class TranskipNilaiController extends Controller
      */
     public function store(Request $request)
 {
+    // Check if user is mahasiswa
+    $user = Auth::user();
+    if (!$user || $user->role !== 'mahasiswa') {
+        return redirect()->back()->with('error', 'Hanya mahasiswa yang dapat mengupload transkip nilai.');
+    }
+
     // 1. Validasi Input
     $request->validate([
         'nim' => 'required', // Sesuaikan validasi NIM kamu
@@ -80,6 +86,11 @@ class TranskipNilaiController extends Controller
     // Jika NIM tidak ada di database, kembalikan error
     if (!$mahasiswa) {
         return redirect()->back()->with('error', 'NIM Mahasiswa tidak ditemukan!');
+    }
+
+    // Verify that the mahasiswa is the logged-in user
+    if ($mahasiswa->user_id != $user->id) {
+        return redirect()->back()->with('error', 'Anda hanya dapat mengupload transkip untuk diri sendiri.');
     }
 
     // 3. Proses Upload File
@@ -123,7 +134,12 @@ class TranskipNilaiController extends Controller
     {
         $transkipNilai = transkip_nilai::findOrFail($id);
 
-        // Public access - anyone can access the edit form
+        // Check if user is mahasiswa and owns this transkip
+        $user = Auth::user();
+        if (!$user || $user->role !== 'mahasiswa' || $transkipNilai->mahasiswa->user_id != $user->id) {
+            abort(403, 'Unauthorized');
+        }
+
         return view('transkip-nilai.edit', compact('transkipNilai'));
     }
 
@@ -133,6 +149,12 @@ class TranskipNilaiController extends Controller
     public function update(Request $request, $id)
     {
         $transkipNilai = transkip_nilai::findOrFail($id);
+
+        // Check if user is mahasiswa and owns this transkip
+        $user = Auth::user();
+        if (!$user || $user->role !== 'mahasiswa' || $transkipNilai->mahasiswa->user_id != $user->id) {
+            abort(403, 'Unauthorized');
+        }
 
         $request->validate([
             'file' => 'nullable|mimes:pdf|max:10240', // 10MB max
@@ -174,19 +196,13 @@ class TranskipNilaiController extends Controller
         $transkipNilai = transkip_nilai::findOrFail($id);
         $user = Auth::user();
 
-        // For mahasiswa: require NIM validation
+        // For mahasiswa: check ownership
         if ($user && $user->role === 'mahasiswa') {
-            $request->validate([
-                'nim' => 'required|string', // Require NIM for identification
-            ]);
-
-            // Verify NIM matches the transkip nilai owner
-            $mahasiswa = Mahasiswa::where('nim', $request->nim)->first();
-            if (!$mahasiswa || $transkipNilai->mahasiswa_id != $mahasiswa->id) {
-                return redirect()->back()->with('error', 'NIM tidak sesuai dengan pemilik transkip nilai.');
+            if ($transkipNilai->mahasiswa->user_id != $user->id) {
+                return redirect()->back()->with('error', 'Anda hanya dapat menghapus transkip nilai sendiri.');
             }
         }
-        // For dosen, admin, kaprodi: allow deletion without NIM validation
+        // For dosen, admin, kaprodi: allow deletion without ownership check
         elseif ($user && in_array($user->role, ['dosen', 'admin', 'kaprodi'])) {
             // No additional validation needed
         }
@@ -225,9 +241,8 @@ class TranskipNilaiController extends Controller
 
         $user = Auth::user();
 
-
-        // Only dosen and kaprodi can update status
-        if (!in_array($user->role, ['dosen', 'kaprodi'])) {
+        // Only kaprodi can update status
+        if ($user->role !== 'kaprodi') {
             abort(403, 'Unauthorized');
         }
 
@@ -241,14 +256,6 @@ class TranskipNilaiController extends Controller
         $message = $request->status === 'approved' ? 'Transkip nilai berhasil divalidasi.' : 'Transkip nilai berhasil ditolak.';
 
         return redirect()->route('transkip-nilai.index')->with('success', $message);
-    $transkip = \App\Models\transkip_nilai::findOrFail($id);
-    
-    // Ubah status sesuai tombol yang diklik
-    $transkip->status = $request->status;
-    $transkip->save();
-
-    return redirect()->back()->with('success', 'Status berhasil diperbarui!');
-
     }
     public function viewPdf($id)
 {
