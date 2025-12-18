@@ -217,7 +217,7 @@ class TranskipNilaiController extends Controller
     }
 
     /**
-     * Update status (for dosen validation).
+     * Update status (for dosen and kaprodi validation).
      */
     public function updateStatus(Request $request, $id)
     {
@@ -226,8 +226,8 @@ class TranskipNilaiController extends Controller
         $user = Auth::user();
 
 
-        // Only dosen can update status
-        if ($user->role !== 'dosen') {
+        // Only dosen and kaprodi can update status
+        if (!in_array($user->role, ['dosen', 'kaprodi'])) {
             abort(403, 'Unauthorized');
         }
 

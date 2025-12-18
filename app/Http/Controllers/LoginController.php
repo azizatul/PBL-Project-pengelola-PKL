@@ -44,6 +44,30 @@ public function username()
 
         return back()->with('error', 'Password salah')->withInput();
     }
+
+    public function loginKaprodi(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string'
+        ]);
+
+        // Cari user dengan role kaprodi berdasarkan email
+        $user = User::where('email', $request->email)->where('role', 'kaprodi')->first();
+
+        if (!$user) {
+            // Email tidak ditemukan atau bukan kaprodi
+            return back()->with('error', 'Email tidak ditemukan atau bukan Kaprodi')->withInput();
+        }
+
+        // Coba login menggunakan guard default (users table)
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            // Redirect ke dashboard kaprodi
+            return redirect()->route('dashboard.kaprodi');
+        }
+
+        return back()->with('error', 'Password salah')->withInput();
+    }
     
 
     public function logout(Request $request)

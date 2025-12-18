@@ -15,6 +15,7 @@ Route::get('/', function () {
 Route::get('/login', [App\Http\Controllers\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\LoginController::class, 'loginMahasiswa'])->name('login.submit');
 Route::post('/login/mahasiswa', [App\Http\Controllers\LoginController::class, 'loginMahasiswa'])->name('login.mahasiswa');
+Route::post('/login/kaprodi', [App\Http\Controllers\LoginController::class, 'loginKaprodi'])->name('login.kaprodi');
 Route::post('/logout', [App\Http\Controllers\LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [App\Http\Controllers\LoginController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [App\Http\Controllers\LoginController::class, 'register'])->name('register.submit');
@@ -59,9 +60,11 @@ Route::get('/dashboard/admin', [App\Http\Controllers\DashAdminController::class,
 Route::get('/dashadmin', [App\Http\Controllers\DashAdminController::class, 'index'])->name('dashadmin');
 Route::get('/dashboard/dosen', [App\Http\Controllers\DashDosenController::class, 'index'])->name('dashboard.dosen');
 Route::get('/dashdosen', [App\Http\Controllers\DashDosenController::class, 'index'])->name('dashdosen');
-Route::get('/dashboard/kaprodi', function () {
-    return view('dashkaprodi');
-})->name('dashboard.kaprodi');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard/kaprodi', function () {
+        return view('dashkaprodi');
+    })->name('dashboard.kaprodi');
+});
 Route::get('/dashkaprodi', function () {
     return view('dashkaprodi');
 })->name('dashkaprodi');
@@ -148,21 +151,21 @@ Route::get('transkip-nilai/{id}/view-pdf', [App\Http\Controllers\TranskipNilaiCo
     ->name('transkip-nilai.view_pdf');
 // Ganti 'post' menjadi 'patch'
 // Ganti 'post' menjadi 'patch'
-// --- ROUTE TRANSKRIP NILAI (TANPA LOGIN/AUTH) ---
-// Gunakan 'auth:mahasiswa' (tanpa huruf 's' di belakang)
-Route::middleware(['auth:mahasiswa'])->group(function () {
-    
+// --- ROUTE TRANSKRIP NILAI (DENGAN AUTH) ---
+// Gunakan 'auth' untuk mengizinkan kaprodi dan role lainnya
+Route::middleware(['auth'])->group(function () {
+
     Route::resource('transkip-nilai', TranskipNilaiController::class);
-    
+
     Route::get('transkip-nilai/{id}/download', [TranskipNilaiController::class, 'download'])
         ->name('transkip-nilai.download');
-    
+
     Route::get('transkip-nilai/{id}/view-pdf', [TranskipNilaiController::class, 'viewPdf'])
         ->name('transkip-nilai.view_pdf');
 
     Route::patch('transkip-nilai/{id}/update-status', [TranskipNilaiController::class, 'updateStatus'])
         ->name('transkip-nilai.update-status');
-});
+}); // <-- Closing brace for auth middleware group
 
  // <--- Pastikan ini ada di paling atas
 

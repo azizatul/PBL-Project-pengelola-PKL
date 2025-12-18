@@ -173,16 +173,17 @@
       </div>
       
       <div id="kaprodi-form" class="form-section">
-        <form onsubmit="event.preventDefault(); window.location.href='dashkaprodi';">
+        <form action="{{ route('login.kaprodi') }}" method="POST">
+          @csrf
           <div class="input-group">
             <label for="email-kaprodi">Email Kaprodi</label>
             <i class="fas fa-chalkboard-teacher input-icon"></i>
-            <input type="email" id="email-kaprodi" placeholder="Masukkan Email Kaprodi" required>
+            <input type="email" name="email" id="email-kaprodi" value="{{ old('email') }}" placeholder="Masukkan Email Kaprodi" required>
           </div>
           <div class="input-group">
             <label for="password-kaprodi">Password</label>
             <i class="fas fa-lock input-icon"></i>
-            <input type="password" id="password-kaprodi" placeholder="Masukkan Password" required>
+            <input type="password" name="password" id="password-kaprodi" placeholder="Masukkan Password" required>
           </div>
           <button type="submit" class="btn">Login Kaprodi</button>
         </form>

@@ -204,39 +204,44 @@
         {{-- KOLOM AKSI (DENGAN TOMBOL UBAH STATUS) --}}
         <td class="text-end pe-4">
             <div class="d-flex justify-content-end gap-1">
-                
+
                 {{-- 1. Tombol LIHAT --}}
                 <a href="{{ route('transkip-nilai.show', $data->id) }}" class="btn-icon view" title="Lihat Detail">
                     <i class="fas fa-eye"></i>
                 </a>
 
-                {{-- 2. Tombol SETUJUI (Hanya muncul jika belum approved) --}}
-                            {{-- Tombol SETUJUI --}}
-                <form action="{{ route('transkip-nilai.update-status', $data->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('PATCH') {{-- WAJIB ADA --}}
-                    <input type="hidden" name="status" value="approved">
-                    <button type="submit" class="btn-icon text-success" title="Setujui">
-                        <i class="fas fa-check"></i>
-                    </button>
-                </form>
-                {{-- 3. Tombol TOLAK (Hanya muncul jika belum rejected) --}}
-                <form action="{{ route('transkip-nilai.update-status', $data->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('PATCH') {{-- WAJIB ADA --}}
-                    <input type="hidden" name="status" value="rejected">
-                    <button type="submit" class="btn-icon text-danger" title="Tolak">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </form>
-                {{-- 4. Tombol HAPUS --}}
-                <form action="{{ route('transkip-nilai.destroy', $data->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn-icon delete" title="Hapus Data">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </form>
+                {{-- 2. Tombol SETUJUI dan TOLAK (Hanya untuk kaprodi) --}}
+                @if(Auth::check() && Auth::user()->role === 'kaprodi')
+                    {{-- Tombol SETUJUI --}}
+                    <form action="{{ route('transkip-nilai.update-status', $data->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('PATCH') {{-- WAJIB ADA --}}
+                        <input type="hidden" name="status" value="approved">
+                        <button type="submit" class="btn-icon text-success" title="Setujui">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </form>
+                    {{-- Tombol TOLAK --}}
+                    <form action="{{ route('transkip-nilai.update-status', $data->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('PATCH') {{-- WAJIB ADA --}}
+                        <input type="hidden" name="status" value="rejected">
+                        <button type="submit" class="btn-icon text-danger" title="Tolak">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                @endif
+
+                {{-- 3. Tombol HAPUS (Hanya untuk kaprodi dan admin) --}}
+                @if(Auth::check() && in_array(Auth::user()->role, ['kaprodi', 'admin']))
+                    <form action="{{ route('transkip-nilai.destroy', $data->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-icon delete" title="Hapus Data">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                @endif
             </div>
         </td>
     </tr>
