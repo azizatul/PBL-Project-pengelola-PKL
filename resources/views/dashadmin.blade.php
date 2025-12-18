@@ -482,7 +482,7 @@
                             <i class="fas fa-user-tie"></i>
                             <div class="card-content">
                                 <div class="card-title">Total Dosen</div>
-                                <div class="card-value">1</div>
+                                <div class="card-value">2</div>
                             </div>
                         </div>
                         <div class="card blue">
@@ -496,7 +496,7 @@
                             <i class="fas fa-building"></i>
                             <div class="card-content">
                                 <div class="card-title">Total Perusahaan</div>
-                                <div class="card-value">3</div>
+                                <div class="card-value">2</div>
                             </div>
                         </div>
                         <div class="card yellow">
