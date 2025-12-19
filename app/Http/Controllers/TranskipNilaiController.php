@@ -67,9 +67,9 @@ class TranskipNilaiController extends Controller
      */
     public function store(Request $request)
 {
-    // Check if user is mahasiswa
-    $user = Auth::user();
-    if (!$user || $user->role !== 'mahasiswa') {
+    // Check if user is mahasiswa using mahasiswa guard
+    $mahasiswa = Auth::guard('mahasiswa')->user();
+    if (!$mahasiswa) {
         return redirect()->back()->with('error', 'Hanya mahasiswa yang dapat mengupload transkip nilai.');
     }
 
@@ -81,15 +81,15 @@ class TranskipNilaiController extends Controller
 
     // 2. Cari Data Mahasiswa Berdasarkan NIM
     // Pastikan Model 'Mahasiswa' dan kolom 'nim' sesuai dengan database kamu
-    $mahasiswa = \App\Models\Mahasiswa::where('nim', $request->nim)->first();
+    $mahasiswaFromDB = \App\Models\Mahasiswa::where('nim', $request->nim)->first();
 
     // Jika NIM tidak ada di database, kembalikan error
-    if (!$mahasiswa) {
+    if (!$mahasiswaFromDB) {
         return redirect()->back()->with('error', 'NIM Mahasiswa tidak ditemukan!');
     }
 
     // Verify that the mahasiswa is the logged-in user
-    if ($mahasiswa->user_id != $user->id) {
+    if ($mahasiswaFromDB->id != $mahasiswa->id) {
         return redirect()->back()->with('error', 'Anda hanya dapat mengupload transkip untuk diri sendiri.');
     }
 
@@ -135,8 +135,8 @@ class TranskipNilaiController extends Controller
         $transkipNilai = transkip_nilai::findOrFail($id);
 
         // Check if user is mahasiswa and owns this transkip
-        $user = Auth::user();
-        if (!$user || $user->role !== 'mahasiswa' || $transkipNilai->mahasiswa->user_id != $user->id) {
+        $mahasiswa = Auth::guard('mahasiswa')->user();
+        if (!$mahasiswa || $transkipNilai->mahasiswa_id != $mahasiswa->id) {
             abort(403, 'Unauthorized');
         }
 
@@ -151,8 +151,8 @@ class TranskipNilaiController extends Controller
         $transkipNilai = transkip_nilai::findOrFail($id);
 
         // Check if user is mahasiswa and owns this transkip
-        $user = Auth::user();
-        if (!$user || $user->role !== 'mahasiswa' || $transkipNilai->mahasiswa->user_id != $user->id) {
+        $mahasiswa = Auth::guard('mahasiswa')->user();
+        if (!$mahasiswa || $transkipNilai->mahasiswa_id != $mahasiswa->id) {
             abort(403, 'Unauthorized');
         }
 
@@ -162,8 +162,8 @@ class TranskipNilaiController extends Controller
         ]);
 
         // Verify NIM matches the transkip nilai owner
-        $mahasiswa = Mahasiswa::where('nim', $request->nim)->first();
-        if (!$mahasiswa || $transkipNilai->mahasiswa_id != $mahasiswa->id) {
+        $mahasiswaFromDB = Mahasiswa::where('nim', $request->nim)->first();
+        if (!$mahasiswaFromDB || $transkipNilai->mahasiswa_id != $mahasiswaFromDB->id) {
             return redirect()->back()->with('error', 'NIM tidak sesuai dengan pemilik transkip nilai.');
         }
 
@@ -195,12 +195,17 @@ class TranskipNilaiController extends Controller
     {
         $transkipNilai = transkip_nilai::findOrFail($id);
         $user = Auth::user();
+        $mahasiswa = Auth::guard('mahasiswa')->user();
 
         // For mahasiswa: check ownership
-        if ($user && $user->role === 'mahasiswa') {
-            if ($transkipNilai->mahasiswa->user_id != $user->id) {
+        if ($mahasiswa) {
+            if ($transkipNilai->mahasiswa_id != $mahasiswa->id) {
                 return redirect()->back()->with('error', 'Anda hanya dapat menghapus transkip nilai sendiri.');
             }
+        }
+        // For other users (kaprodi, dosen, admin): check their role
+        elseif ($user && in_array($user->role, ['kaprodi', 'dosen', 'admin'])) {
+            // Allow deletion for these roles
         }
         // For dosen, admin, kaprodi: allow deletion without ownership check
         elseif ($user && in_array($user->role, ['dosen', 'admin', 'kaprodi'])) {

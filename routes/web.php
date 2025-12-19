@@ -167,9 +167,25 @@ Route::middleware(['auth'])->group(function () {
         ->name('transkip-nilai.update-status');
 }); // <-- Closing brace for auth middleware group
 
- // <--- Pastikan ini ada di paling atas
+// <--- Pastikan ini ada di paling atas
 
 // ... kode route login/register lainnya ...
+
+// --- ROUTE TRANSKRIP NILAI (DENGAN AUTH) ---
+// Gunakan 'auth' untuk mengizinkan kaprodi dan role lainnya
+Route::middleware(['auth'])->group(function () {
+
+    Route::resource('transkip-nilai', TranskipNilaiController::class);
+
+    Route::get('transkip-nilai/{id}/download', [TranskipNilaiController::class, 'download'])
+        ->name('transkip-nilai.download');
+
+    Route::get('transkip-nilai/{id}/view-pdf', [TranskipNilaiController::class, 'viewPdf'])
+        ->name('transkip-nilai.view_pdf');
+
+    Route::patch('transkip-nilai/{id}/update-status', [TranskipNilaiController::class, 'updateStatus'])
+        ->name('transkip-nilai.update-status');
+}); // <-- Closing brace for auth middleware group
 
 // --- ROUTE GOOGLE INI HARUS DI LUAR GRUP MIDDLEWARE AUTH ---
 Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
