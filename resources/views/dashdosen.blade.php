@@ -428,12 +428,9 @@
             @if(Auth::check() && Auth::user()->role === 'dosen')
                 <div class="recent-list">
                     <h2>Transkrip Nilai</h2>
-                    <p>Unduh atau lihat transkrip mahasiswa yang Anda bimbing.</p>
+                    <p>Lihat transkrip mahasiswa yang Anda bimbing.</p>
                     <div style="margin-top:10px;">
                         <a href="{{ route('transkrip.index') }}" class="btn btn-primary">Lihat Transkrip</a>
-                        @if(Route::has('transkrip.download'))
-                            <a href="{{ route('transkrip.download') }}" class="btn btn-secondary">Unduh Semua (PDF)</a>
-                        @endif
                     </div>
                 </div>
             @endif

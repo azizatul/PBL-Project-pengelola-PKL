@@ -574,13 +574,42 @@
                     </div>
                 </div>
 
-                @if($mitras->isEmpty())
+        @if($mitras->isEmpty())
                 <div style="text-align: center; padding: 50px; background-color: var(--white-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
                     <div style="font-size: 4rem; opacity: 0.5; margin-bottom: 20px;">🏢</div>
                     <h3 style="color: var(--grey-text); margin-bottom: 10px;">Belum ada perusahaan mitra</h3>
                     <p style="color: var(--grey-text);">Perusahaan mitra akan segera ditambahkan.</p>
                 </div>
                 @endif
+            </div>
+        </section>
+
+        <!-- Status Dokumen Section -->
+        <section class="dokumen-section" style="margin-top: 40px;">
+            <div class="container">
+                <div style="background-color: var(--white-bg); border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 30px;">
+                    <h2 style="color: var(--dark-text); margin-bottom: 20px; font-size: 1.8rem; font-weight: 600;">Status Dokumen</h2>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background-color: var(--light-blue);">
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--dark-text);">Nama Dokumen</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--dark-text);">Tanggal Upload</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--dark-text);">Status</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--dark-text);">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Placeholder for documents -->
+                                <tr>
+                                    <td colspan="4" style="padding: 40px; text-align: center; color: var(--grey-text); font-style: italic;">
+                                        Belum ada dokumen diunggah
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
     </main>

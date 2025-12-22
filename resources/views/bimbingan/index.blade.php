@@ -142,20 +142,92 @@
 
 <div class="container">
     <h2>Daftar Jadwal Bimbingan</h2>
-    <a href="{{ route('bimbingan.create') }}" class="btn-tambah">Tambah Bimbingan</a>
+    <a href="{{ route('bimbingan.create') }}" class="btn-tambah">Bimbingan baru</a>
 
     @if($bimbingans->count() > 0)
         <table>
             <thead>
                 <tr>
-                    <th>Tanggal</th>
-                    <th>Waktu Mulai</th>
-                    <th>Waktu Selesai</th>
-                    <th>Mahasiswa</th>
-                    <th>Dosen</th>
-                    <th>Topik</th>
-                    <th>Catatan</th>
-                    <th>Status</th>
+                    <th>
+                        <a href="{{ route('bimbingan.index', ['sort_by' => 'tanggal', 'sort_direction' => ($sortBy == 'tanggal' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: white; text-decoration: none;">
+                            Tanggal
+                            @if($sortBy == 'tanggal')
+                                <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                            @else
+                                <i class="fas fa-sort"></i>
+                            @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('bimbingan.index', ['sort_by' => 'waktu_mulai', 'sort_direction' => ($sortBy == 'waktu_mulai' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: white; text-decoration: none;">
+                            Waktu Mulai
+                            @if($sortBy == 'waktu_mulai')
+                                <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                            @else
+                                <i class="fas fa-sort"></i>
+                            @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('bimbingan.index', ['sort_by' => 'waktu_selesai', 'sort_direction' => ($sortBy == 'waktu_selesai' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: white; text-decoration: none;">
+                            Waktu Selesai
+                            @if($sortBy == 'waktu_selesai')
+                                <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                            @else
+                                <i class="fas fa-sort"></i>
+                            @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('bimbingan.index', ['sort_by' => 'mahasiswa.nama_mahasiswa', 'sort_direction' => ($sortBy == 'mahasiswa.nama_mahasiswa' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: white; text-decoration: none;">
+                            Mahasiswa
+                            @if($sortBy == 'mahasiswa.nama_mahasiswa')
+                                <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                            @else
+                                <i class="fas fa-sort"></i>
+                            @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('bimbingan.index', ['sort_by' => 'dosen.nama_dosen', 'sort_direction' => ($sortBy == 'dosen.nama_dosen' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: white; text-decoration: none;">
+                            Dosen
+                            @if($sortBy == 'dosen.nama_dosen')
+                                <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                            @else
+                                <i class="fas fa-sort"></i>
+                            @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('bimbingan.index', ['sort_by' => 'topik', 'sort_direction' => ($sortBy == 'topik' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: white; text-decoration: none;">
+                            Topik
+                            @if($sortBy == 'topik')
+                                <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                            @else
+                                <i class="fas fa-sort"></i>
+                            @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('bimbingan.index', ['sort_by' => 'catatan', 'sort_direction' => ($sortBy == 'catatan' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: white; text-decoration: none;">
+                            Catatan
+                            @if($sortBy == 'catatan')
+                                <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                            @else
+                                <i class="fas fa-sort"></i>
+                            @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('bimbingan.index', ['sort_by' => 'status', 'sort_direction' => ($sortBy == 'status' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: white; text-decoration: none;">
+                            Status
+                            @if($sortBy == 'status')
+                                <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                            @else
+                                <i class="fas fa-sort"></i>
+                            @endif
+                        </a>
+                    </th>
                     <th>Aksi</th>
                 </tr>
             </thead>

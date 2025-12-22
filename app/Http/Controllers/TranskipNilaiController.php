@@ -44,13 +44,6 @@ class TranskipNilaiController extends Controller
         }
 
         return view('transkip-nilai.index', compact('transkipNilais'));
-      
-    // Ambil semua data, urutkan dari yang terbaru (latest)
-    // 'with' digunakan agar data mahasiswa ikut terbawa
-    $transkipNilais = \App\Models\transkip_nilai::with('mahasiswa')->latest()->get();
-
-    // Kirim variabel $transkipNilais ke view
-    return view('transkip-nilai.index', compact('transkipNilais'));
 }
 
     /**
@@ -66,56 +59,52 @@ class TranskipNilaiController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    // Check if user is mahasiswa using mahasiswa guard
-    $mahasiswa = Auth::guard('mahasiswa')->user();
-    if (!$mahasiswa) {
-        return redirect()->back()->with('error', 'Hanya mahasiswa yang dapat mengupload transkip nilai.');
-    }
+    {
+        // User is already authenticated via middleware
+        $user = Auth::user();
 
-    // 1. Validasi Input
-    $request->validate([
-        'nim' => 'required', // Sesuaikan validasi NIM kamu
-        'file' => 'required|mimes:pdf|max:10240', // Maksimal 10MB (10240 KB)
-    ]);
-
-    // 2. Cari Data Mahasiswa Berdasarkan NIM
-    // Pastikan Model 'Mahasiswa' dan kolom 'nim' sesuai dengan database kamu
-    $mahasiswaFromDB = \App\Models\Mahasiswa::where('nim', $request->nim)->first();
-
-    // Jika NIM tidak ada di database, kembalikan error
-    if (!$mahasiswaFromDB) {
-        return redirect()->back()->with('error', 'NIM Mahasiswa tidak ditemukan!');
-    }
-
-    // Verify that the mahasiswa is the logged-in user
-    if ($mahasiswaFromDB->id != $mahasiswa->id) {
-        return redirect()->back()->with('error', 'Anda hanya dapat mengupload transkip untuk diri sendiri.');
-    }
-
-    // 3. Proses Upload File
-    if ($request->hasFile('file')) {
-        $file = $request->file('file');
-        
-        // Buat nama file unik (waktu + nama asli) agar tidak bentrok
-        $filename = time() . '_' . $file->getClientOriginalName();
-        
-        // Simpan file ke folder: storage/app/public/transkrips
-        $file->storeAs('public/transkrips', $filename);
-
-        // 4. Simpan Data ke Database
-        \App\Models\transkip_nilai::create([
-            'mahasiswa_id' => $mahasiswa->id,
-            'original_filename' => $file->getClientOriginalName(),
-            'file_path' => $filename,
-            'status' => 'pending', // Default status saat pertama upload
+        // 1. Validasi Input
+        $request->validate([
+            'nim' => 'required', // Sesuaikan validasi NIM kamu
+            'file' => 'required|mimes:pdf|max:10240', // Maksimal 10MB (10240 KB)
         ]);
 
-        return redirect()->route('transkip-nilai.index')->with('success', 'Transkrip berhasil diupload!');
-    }
+        // 2. Cari Data Mahasiswa Berdasarkan user_id dari logged-in user
+        $mahasiswa = \App\Models\Mahasiswa::where('user_id', $user->id)->first();
 
-    return redirect()->back()->with('error', 'File gagal diupload.');
-}
+        // Jika mahasiswa tidak ditemukan, kembalikan error
+        if (!$mahasiswa) {
+            return redirect()->back()->with('error', 'Data mahasiswa tidak ditemukan!');
+        }
+
+        // Verify that the NIM matches the mahasiswa's NIM
+        if ($mahasiswa->nim !== $request->nim) {
+            return redirect()->back()->with('error', 'NIM tidak sesuai dengan data mahasiswa Anda.');
+        }
+
+        // 3. Proses Upload File
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+
+            // Buat nama file unik (waktu + nama asli) agar tidak bentrok
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            // Simpan file ke folder: storage/app/public/transkrips
+            $file->storeAs('public/transkrips', $filename);
+
+            // 4. Simpan Data ke Database
+            \App\Models\transkip_nilai::create([
+                'mahasiswa_id' => $mahasiswa->id,
+                'original_filename' => $file->getClientOriginalName(),
+                'file_path' => 'transkrips/' . $filename,
+                'status' => 'pending', // Default status saat pertama upload
+            ]);
+
+            return redirect()->route('transkip-nilai.index')->with('success', 'Transkrip berhasil diupload!');
+        }
+
+        return redirect()->back()->with('error', 'File gagal diupload.');
+    }
     /**
      * Display the specified resource.
      */
@@ -135,7 +124,12 @@ class TranskipNilaiController extends Controller
         $transkipNilai = transkip_nilai::findOrFail($id);
 
         // Check if user is mahasiswa and owns this transkip
-        $mahasiswa = Auth::guard('mahasiswa')->user();
+        $user = Auth::user();
+        if (!$user || $user->role !== 'mahasiswa') {
+            abort(403, 'Unauthorized');
+        }
+
+        $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
         if (!$mahasiswa || $transkipNilai->mahasiswa_id != $mahasiswa->id) {
             abort(403, 'Unauthorized');
         }
@@ -151,7 +145,12 @@ class TranskipNilaiController extends Controller
         $transkipNilai = transkip_nilai::findOrFail($id);
 
         // Check if user is mahasiswa and owns this transkip
-        $mahasiswa = Auth::guard('mahasiswa')->user();
+        $user = Auth::user();
+        if (!$user || $user->role !== 'mahasiswa') {
+            abort(403, 'Unauthorized');
+        }
+
+        $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
         if (!$mahasiswa || $transkipNilai->mahasiswa_id != $mahasiswa->id) {
             abort(403, 'Unauthorized');
         }
@@ -175,10 +174,9 @@ class TranskipNilaiController extends Controller
 
             $file = $request->file('file');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $directory = 'transkip_nilai';
-            $file->storeAs($directory, $filename, 'public');
+            $file->storeAs('public/transkrips', $filename);
 
-            $transkipNilai->file_path = $directory . '/' . $filename;
+            $transkipNilai->file_path = 'transkrips/' . $filename;
             $transkipNilai->original_filename = $file->getClientOriginalName();
             $transkipNilai->status = 'pending'; // Reset status when file is updated
         }
@@ -195,11 +193,11 @@ class TranskipNilaiController extends Controller
     {
         $transkipNilai = transkip_nilai::findOrFail($id);
         $user = Auth::user();
-        $mahasiswa = Auth::guard('mahasiswa')->user();
 
         // For mahasiswa: check ownership
-        if ($mahasiswa) {
-            if ($transkipNilai->mahasiswa_id != $mahasiswa->id) {
+        if ($user && $user->role === 'mahasiswa') {
+            $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
+            if (!$mahasiswa || $transkipNilai->mahasiswa_id != $mahasiswa->id) {
                 return redirect()->back()->with('error', 'Anda hanya dapat menghapus transkip nilai sendiri.');
             }
         }
@@ -207,11 +205,7 @@ class TranskipNilaiController extends Controller
         elseif ($user && in_array($user->role, ['kaprodi', 'dosen', 'admin'])) {
             // Allow deletion for these roles
         }
-        // For dosen, admin, kaprodi: allow deletion without ownership check
-        elseif ($user && in_array($user->role, ['dosen', 'admin', 'kaprodi'])) {
-            // No additional validation needed
-        }
-        // For other cases (public access): deny deletion
+        // For other cases: deny deletion
         else {
             return redirect()->back()->with('error', 'Tidak memiliki izin untuk menghapus transkip nilai.');
         }
@@ -268,7 +262,7 @@ class TranskipNilaiController extends Controller
 
     // Tentukan lokasi file asli
     // Pastikan path ini sesuai dengan tempat kamu menyimpan file (public/transkrips)
-    $path = storage_path('app/public/transkrips/' . $transkip->file_path);
+    $path = storage_path('app/public/' . $transkip->file_path);
 
     // Cek apakah file ada
     if (!file_exists($path)) {

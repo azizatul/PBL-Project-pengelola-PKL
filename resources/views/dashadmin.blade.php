@@ -525,13 +525,14 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>NIM</th>
                                     <th>Nama</th>
                                     <th>Email</th>
-                                    <th>Prodi</th>
+                                    <th>NIM</th>
+                                    <th>Telepon</th>
                                     <th>Angkatan</th>
+                                    <th>Alamat</th>
+                                    <th>Prodi</th>
                                     <th>Photo</th>
-                                    <th>Status</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -541,6 +542,8 @@
                                         <td>{{ $mahasiswa->nim ?? 'N/A' }}</td>
                                         <td>{{ $mahasiswa->nama_mahasiswa ?? 'N/A' }}</td>
                                         <td>{{ $mahasiswa->email ?? 'N/A' }}</td>
+                                        <td>{{ $mahasiswa->telepon ?? 'N/A' }}</td>
+                                        <td>{{ $mahasiswa->alamat ?? 'N/A' }}</td>
                                         <td>{{ $mahasiswa->prodi->nama ?? 'N/A' }}</td>
                                         <td>{{ $mahasiswa->angkatan ?? 'N/A' }}</td>
                                         <td>
@@ -548,15 +551,6 @@
                                                 <img src="{{ asset('storage/' . $mahasiswa->photo) }}" alt="Photo" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
                                             @else
                                                 No Photo
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if ($mahasiswa->status_validasi === 'pending')
-                                                <span class="status menunggu">Menunggu</span>
-                                            @elseif ($mahasiswa->status_validasi === 'validated')
-                                                <span class="status diterima">Diterima</span>
-                                            @else
-                                                <span class="status ditolak">Ditolak</span>
                                             @endif
                                         </td>
                                         <td>
@@ -575,7 +569,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">Belum ada data mahasiswa</td>
+                                        <td colspan="9" style="text-align: center; padding: 40px; color: #999;">Belum ada data mahasiswa</td>
                                     </tr>
                                 @endforelse
                             </tbody>

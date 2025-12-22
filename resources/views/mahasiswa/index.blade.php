@@ -20,6 +20,7 @@
                     <th>NIM</th>
                     <th>Nama</th>
                     <th>Email</th>
+                    <th>Telepon</th>
                     <th>Alamat</th>
                     <th>Prodi</th>
                     <th>Angkatan</th>
@@ -32,10 +33,15 @@
                     <td>{{ $item->nim }}</td>
                     <td>{{ $item->nama_mahasiswa }}</td>
                     <td>{{ $item->email }}</td>
+                    <td>{{ $item->telepon }}</td>
                     <td>{{ $item->alamat }}</td>
-                    <td>{{ $item->prodi->nama_prodi }}</td>
+                    <td>{{ $item->prodi ? $item->prodi->nama_prodi : 'N/A' }}</td>
                     <td>{{ $item->angkatan }}</td>
-                    <td>No Photo</td>
+                    <td>{{ $item->status_validasi }}</td>
+                    <td>{{ $item->bimbingan_count }}</td>
+                    <td>{{ $item->seminar_progress }}</td>
+                    <td>{{ $item->attendance_percentage }}</td>
+                    <td>{{ $item->photo ? 'Ada' : 'Tidak Ada' }}</td>
                     <td>
                         <a href="{{ route('mahasiswa.show', $item->id) }}" class="btn btn-info btn-sm">Lihat</a>
                         <a href="{{ route('mahasiswa.edit', $item->id) }}" class="btn btn-warning btn-sm">Edit</a>

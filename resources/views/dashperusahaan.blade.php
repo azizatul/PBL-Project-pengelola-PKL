@@ -414,14 +414,14 @@
                     <i class="fas fa-file-upload"></i>
                     <div class="card-content">
                         <div class="card-title">Dokumen Diunggah</div>
-                        <div class="card-value">0</div>
+                        <div class="card-value">{{ $totalDocuments }}</div>
                     </div>
                 </div>
                 <div class="card teal">
                     <i class="fas fa-chart-line"></i>
                     <div class="card-content">
                         <div class="card-title">Nilai Rata-rata</div>
-                        <div class="card-value">0</div>
+                        <div class="card-value">{{ $averageRating }}</div>
                     </div>
                 </div>
             </div>
@@ -431,16 +431,69 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Nama Dokumen</th>
-                            <th>Tanggal Upload</th>
-                            <th>Status</th>
+                            <th>
+                                <a href="{{ route('dashperusahaan', ['sort_by' => 'judul', 'sort_direction' => ($sortBy == 'judul' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: inherit; text-decoration: none;">
+                                    Nama Dokumen
+                                    @if($sortBy == 'judul')
+                                        <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('dashperusahaan', ['sort_by' => 'created_at', 'sort_direction' => ($sortBy == 'created_at' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: inherit; text-decoration: none;">
+                                    Tanggal Upload
+                                    @if($sortBy == 'created_at')
+                                        <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ route('dashperusahaan', ['sort_by' => 'status', 'sort_direction' => ($sortBy == 'status' && $sortDirection == 'asc') ? 'desc' : 'asc']) }}" style="color: inherit; text-decoration: none;">
+                                    Status
+                                    @if($sortBy == 'status')
+                                        <i class="fas fa-sort-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fas fa-sort"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @forelse($documents as $document)
+                        <tr>
+                            <td>{{ $document->judul }}</td>
+                            <td>{{ $document->created_at->format('H:i d/m/Y') }}</td>
+                            <td>
+                                @if($document->status == 'pending')
+                                    <span class="badge badge-warning">Menunggu</span>
+                                @elseif($document->status == 'approved')
+                                    <span class="badge badge-success">Disetujui</span>
+                                @else
+                                    <span class="badge badge-danger">Ditolak</span>
+                                @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('proposal.show', $document->id) }}" class="btn btn-sm btn-info" title="Lihat Detail">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if($document->file_path)
+                                    <a href="{{ route('proposal.download', $document->id) }}" class="btn btn-sm btn-secondary" title="Download File" target="_blank">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
                         <tr>
                             <td colspan="4" style="text-align: center; color: #666;">Belum ada dokumen diunggah</td>
                         </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

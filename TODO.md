@@ -1,24 +1,14 @@
-# TODO: Enable Mahasiswa to Upload Transkip Nilai
+# Fix TranskipNilaiController.php Errors
 
-## Problem Analysis
-- Mahasiswa cannot upload transkip nilai files
-- Root cause: Controller uses Auth::user() (web guard) but mahasiswa authenticate with 'mahasiswa' guard
-- Auth::user() returns null for mahasiswa, causing access denial
+## Issues Identified:
+1. Duplicate and unreachable code in index() method
+2. Inconsistent file storage paths across methods
+3. Incorrect Auth guard usage in update() method
+4. File path inconsistencies in destroy(), download(), and viewPdf() methods
 
-## Plan
-1. Update TranskipNilaiController to check mahasiswa authentication using Auth::guard('mahasiswa')->user()
-2. Ensure proper user verification in store, edit, update, and destroy methods
-3. Test the upload functionality
-
-## Files to Edit
-- app/Http/Controllers/TranskipNilaiController.php
-
-## Changes Made
-- [x] Updated store() method to use Auth::guard('mahasiswa')->user()
-- [x] Updated edit() method to use Auth::guard('mahasiswa')->user()
-- [x] Updated update() method to use Auth::guard('mahasiswa')->user()
-- [x] Updated destroy() method to use Auth::guard('mahasiswa')->user()
-
-## Followup Steps
-- [ ] Test upload functionality as mahasiswa
-- [ ] Verify file storage and database records
+## Plan:
+- [x] Remove duplicate code in index() method
+- [x] Standardize file storage to 'public/transkrips' with file_path = 'transkrips/filename'
+- [x] Fix authentication in update() method to use Auth::user() and find mahasiswa
+- [x] Update file path references in destroy(), download(), and viewPdf() methods
+- [x] Ensure consistent validation and error handling

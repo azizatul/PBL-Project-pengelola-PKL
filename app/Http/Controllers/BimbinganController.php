@@ -15,24 +15,48 @@ class BimbinganController extends Controller
     /**
      * Display a listing of bimbingans.
      */
-    public function index()
+    public function index(Request $request)
     {
+       
+        $sortBy = $request->get('sort_by', 'tanggal');
+        $sortDirection = $request->get('sort_direction', 'desc');
+
+        
+        $allowedSorts = ['tanggal', 'waktu_mulai', 'waktu_selesai', 'mahasiswa.nama_mahasiswa', 'dosen.nama_dosen', 'topik', 'catatan', 'status'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'tanggal';
+        }
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'desc';
+        }
+
         $user = Auth::user();
 
         if ($user && $user->role === 'mahasiswa' && $user->mahasiswa) {
-            $bimbingans = $user->mahasiswa->bimbingans()->with('dosen')->orderBy('created_at', 'desc')->paginate(10);
+            $query = $user->mahasiswa->bimbingans()->with('dosen');
         } elseif ($user && $user->role === 'dosen' && $user->dosen) {
-            $bimbingans = Bimbingan::where('dosen_id', $user->dosen->id)->with('mahasiswa')->orderBy('created_at', 'desc')->paginate(10);
+            $query = Bimbingan::where('dosen_id', $user->dosen->id)->with('mahasiswa');
         } else {
-            $bimbingans = Bimbingan::with(['mahasiswa', 'dosen'])->orderBy('created_at', 'desc')->paginate(10);
+            $query = Bimbingan::with(['mahasiswa', 'dosen']);
         }
 
-        return view('bimbingan.index', compact('bimbingans'));
+       
+        if (strpos($sortBy, '.') !== false) {
+            // Handle relationship sorting
+            list($relation, $column) = explode('.', $sortBy);
+            $query->join($relation . 's', 'bimbingans.' . $relation . '_id', '=', $relation . 's.id')
+                  ->orderBy($relation . 's.' . $column, $sortDirection)
+                  ->select('bimbingans.*');
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $bimbingans = $query->paginate(10);
+
+        return view('bimbingan.index', compact('bimbingans', 'sortBy', 'sortDirection'));
     }
 
-    /**
-     * Show form to create a new bimbingan.
-     */
+   
     public function create()
     {
         $mahasiswas = null;
@@ -55,9 +79,7 @@ class BimbinganController extends Controller
         return view('bimbingan.create', compact('mahasiswas', 'dosens'));
     }
 
-    /**
-     * Store a new bimbingan.
-     */
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -83,9 +105,6 @@ class BimbinganController extends Controller
         return redirect()->route('bimbingan.index')->with('success', 'Bimbingan berhasil ditambahkan.');
     }
 
-    /**
-     * Delete a bimbingan. Mahasiswa can delete their own, dosen their own.
-     */
     public function destroy(Bimbingan $bimbingan)
     {
         if (!Auth::check()) {
@@ -111,9 +130,8 @@ class BimbinganController extends Controller
         return redirect()->route('bimbingan.index')->with('success', 'Bimbingan berhasil dihapus.');
     }
 
-    /**
-     * Validate (approve/reject) a bimbingan — only by dosen.
-     */
+    
+   
     public function validateBimbingan(Request $request, Bimbingan $bimbingan)
     {
         if (!Auth::check()) {

@@ -86,12 +86,8 @@ Route::get('/dashmhs', function () {
     }
     return view('dashmhs', compact('mahasiswa', 'bimbingans'));
 })->name('dashmhs');
-Route::get('/dashboard/perusahaan', function () {
-    return view('dashperusahaan');
-})->name('dashboard.perusahaan');
-Route::get('/dashperusahaan', function () {
-    return view('dashperusahaan');
-})->name('dashperusahaan');
+Route::get('/dashboard/perusahaan', [App\Http\Controllers\DashPerusahaanController::class, 'index'])->name('dashboard.perusahaan');
+Route::get('/dashperusahaan', [App\Http\Controllers\DashPerusahaanController::class, 'index'])->name('dashperusahaan');
 
 // Profile routes - ensure web middleware is applied for CSRF protection
 Route::middleware(['web'])->group(function () {
@@ -132,8 +128,8 @@ Route::middleware(['web'])->group(function () {
     Route::post('transkrip/{id}/reject', [App\Http\Controllers\TranskripController::class, 'reject'])->name('transkrip.reject');
 });
 
-// Transkip Nilai routes - ensure web middleware is applied for CSRF protection
-Route::middleware(['web'])->group(function () {
+// Transkip Nilai routes - ensure web and auth middleware is applied
+Route::middleware(['web', 'auth'])->group(function () {
     Route::resource('transkip-nilai', App\Http\Controllers\TranskipNilaiController::class);
     Route::get('transkip-nilai/{id}/download', [App\Http\Controllers\TranskipNilaiController::class, 'download'])->name('transkip-nilai.download');
     Route::post('transkip-nilai/{id}/update-status', [App\Http\Controllers\TranskipNilaiController::class, 'updateStatus'])->name('transkip-nilai.update-status');
